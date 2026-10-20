@@ -40,8 +40,8 @@
   svg{display:block;width:100%;height:100%;filter:drop-shadow(0 8px 14px rgba(194,86,138,.18))}
   .tail{transform-origin:130px 128px;animation:wag 2.6s ease-in-out infinite}
   @keyframes wag{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(9deg)}}
-  .eye{transform-box:fill-box;transform-origin:center;animation:blink 6s infinite}
-  @keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
+  .eye{animation:blink 6s infinite}
+  @keyframes blink{0%,93%,100%{opacity:1}95%{opacity:1}96%{opacity:.18}97%{opacity:1}}
 
   .bubble{
     min-height:56px;display:flex;align-items:center;justify-content:center;text-align:center;
