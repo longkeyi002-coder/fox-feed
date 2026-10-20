@@ -40,7 +40,7 @@
   svg{display:block;width:100%;height:100%;filter:drop-shadow(0 8px 14px rgba(194,86,138,.18))}
   .tail{transform-origin:130px 128px;animation:wag 2.6s ease-in-out infinite}
   @keyframes wag{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(9deg)}}
-  .eye{animation:blink 6s infinite}
+  .eye{transform-box:fill-box;transform-origin:center;animation:blink 6s infinite}
   @keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
 
   .bubble{
@@ -143,6 +143,7 @@ if (tg) { try { tg.ready(); tg.expand(); tg.setHeaderColor('#FFE3EE'); tg.setBac
 const haptic = (t) => { try { tg && tg.HapticFeedback && tg.HapticFeedback.impactOccurred(t||'light'); } catch(e){} };
 
 const KEY = 'foxfeed.v1';
+const DAILY_CAP = 10;
 const LINES = [
   {need:0,  id:'first',  text:'（尾巴扫了一下）你来啦 <span class="kao">(´｡• ᵕ •｡`)</span>'},
   {need:1,  id:'fed1',   text:'点心收到了…嘴边还有渣 <span class="kao">(。-ω-。)</span>'},
@@ -158,7 +159,7 @@ const TALK = ['你说话的时候，我在听 <span class="kao">(´｡• ᵕ �
 const S = load();
 function load(){
   try { const raw = localStorage.getItem(KEY); if (raw) return JSON.parse(raw); } catch(e){}
-  return { fed:0, love:0, days:0, lastDay:'', unlocked:[] };
+  return { fed:0, love:0, days:0, lastDay:'', feedDay:'', fedToday:0, unlocked:[] };
 }
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
 
@@ -171,6 +172,7 @@ function todayKey(){
 }
 function touchDay(){
   const t = todayKey();
+  if (S.feedDay !== t){ S.feedDay = t; S.fedToday = 0; save(); }
   if (S.lastDay === t) return false;
   const y = new Date(Date.now()-86400000);
   const yk = y.getFullYear()+'-'+(y.getMonth()+1)+'-'+y.getDate();
@@ -202,6 +204,10 @@ function checkUnlock(){
 }
 
 function render(){
+  const left = Math.max(0, DAILY_CAP - (S.fedToday||0));
+  const fb = $('btnFeed');
+  fb.disabled = left === 0;
+  fb.innerHTML = '点心<small>' + (left ? '今天还剩 '+left+' 块' : '今天喂完了') + '</small>';
   $('sFed').textContent = S.fed;
   $('sLove').textContent = S.love;
   $('sDay').textContent = S.days;
@@ -218,6 +224,11 @@ function render(){
 
 $('btnFeed').onclick = () => {
   touchDay();
+  if (S.fedToday >= DAILY_CAP){
+    say('今天已经喂了 '+DAILY_CAP+' 块，明天再来 <span class="kao">(๑•́ ₃ •̀๑)</span>');
+    return;
+  }
+  S.fedToday = (S.fedToday||0) + 1;
   S.fed++; S.love += 2; save();
   const nu = checkUnlock();
   if (nu) say('新台词 · '+nu.text);
@@ -225,11 +236,11 @@ $('btnFeed').onclick = () => {
   render();
 };
 $('btnPet').onclick = () => {
-  touchDay(); S.love += 1; save(); render();
+  touchDay(); render();
   say(PET[Math.floor(Math.random()*PET.length)], 'pet');
 };
 $('btnTalk').onclick = () => {
-  touchDay(); S.love += 1; save(); render();
+  touchDay(); render();
   say(TALK[Math.floor(Math.random()*TALK.length)]);
 };
 $('btnReset').onclick = () => {
