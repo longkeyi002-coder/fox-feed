@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>喂狐狸</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root{
+    --bg:#FFF6FA; --card:#FFFFFF; --ink:#4A3742; --sub:#8C7A85;
+    --pink:#F2709C; --pink-deep:#C2568A; --pink-soft:#FFC4DA; --line:#F5E0E8;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{
+    background:
+      radial-gradient(120% 60% at 50% -10%, #FFE3EE 0%, rgba(255,227,238,0) 60%),
+      var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,"PingFang SC","Noto Sans SC",system-ui,sans-serif;
+    padding:20px 16px calc(28px + env(safe-area-inset-bottom));
+    display:flex;flex-direction:column;gap:14px;min-height:100%;
+  }
+  header{display:flex;align-items:center;justify-content:space-between;padding:0 4px}
+  h1{font-size:17px;margin:0;letter-spacing:.04em;font-weight:600}
+  .ver{font-size:11px;color:var(--sub)}
+
+  .stage{
+    background:var(--card);border-radius:26px;padding:22px 18px 18px;
+    box-shadow:0 10px 30px -18px rgba(194,86,138,.55);
+    display:flex;flex-direction:column;align-items:center;gap:12px;position:relative;overflow:hidden;
+  }
+  .stage:before{
+    content:"";position:absolute;inset:-40% -20% auto;height:180px;
+    background:radial-gradient(60% 60% at 50% 50%, rgba(255,196,218,.55), transparent 70%);
+  }
+  .foxWrap{width:168px;height:168px;position:relative;transition:transform .18s ease}
+  .foxWrap.hop{transform:translateY(-9px) scale(1.04)}
+  .foxWrap.pet{transform:rotate(-4deg) scale(.97)}
+  svg{display:block;width:100%;height:100%;filter:drop-shadow(0 8px 14px rgba(194,86,138,.18))}
+  .tail{transform-origin:130px 128px;animation:wag 2.6s ease-in-out infinite}
+  @keyframes wag{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(9deg)}}
+  .eye{animation:blink 6s infinite}
+  @keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
+
+  .bubble{
+    min-height:56px;display:flex;align-items:center;justify-content:center;text-align:center;
+    background:#FFF1F6;border-radius:16px;padding:12px 16px;font-size:14px;line-height:1.6;
+    color:var(--ink);width:100%;position:relative;z-index:1;
+  }
+  .bubble b{color:var(--pink-deep);font-weight:600}
+  .kao{font-size:15px;color:var(--pink-deep)}
+
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .stat{background:var(--card);border-radius:18px;padding:12px 8px;text-align:center;
+    box-shadow:0 8px 22px -18px rgba(194,86,138,.6)}
+  .stat .n{font-size:19px;font-weight:600;color:var(--pink-deep);font-variant-numeric:tabular-nums}
+  .stat .l{font-size:11px;color:var(--sub);margin-top:3px}
+
+  .acts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  button{
+    font:inherit;border:0;border-radius:18px;padding:15px 6px;cursor:pointer;
+    background:var(--card);color:var(--ink);box-shadow:0 8px 22px -18px rgba(194,86,138,.7);
+    transition:transform .12s ease,background .15s ease;
+  }
+  button small{display:block;font-size:11px;color:var(--sub);margin-top:4px}
+  button.warm{background:linear-gradient(180deg,#FFD3E2,#FFC4DA)}
+  button:active{transform:scale(.96)}
+  button:disabled{opacity:.45}
+
+  .unlocks{background:var(--card);border-radius:22px;padding:14px 16px;
+    box-shadow:0 8px 22px -18px rgba(194,86,138,.6)}
+  .unlocks h2{font-size:12px;margin:0 0 8px;color:var(--sub);font-weight:500;letter-spacing:.06em}
+  .ul{display:flex;flex-direction:column;gap:7px}
+  .row{display:flex;gap:9px;align-items:flex-start;font-size:13px;line-height:1.5}
+  .row .dot{width:14px;flex:0 0 14px;text-align:center;color:var(--pink)}
+  .row.lock{color:#BCA9B3}
+  .row.lock .dot{color:#DCC7D0}
+
+  .foot{margin-top:auto;text-align:center;font-size:11px;color:var(--sub);padding-top:6px}
+  .clear{background:none;box-shadow:none;color:var(--sub);font-size:11px;padding:6px;margin:0 auto}
+</style>
+</head>
+<body>
+<header>
+  <h1>喂狐狸</h1>
+  <span class="ver">叶青栩 · 投喂站</span>
+</header>
+
+<div class="stage">
+  <div class="foxWrap" id="fox">
+    <svg viewBox="0 0 200 200" aria-label="白蓝小狐狸">
+      <g class="tail">
+        <path d="M126 132 C162 130 178 106 174 82 C170 60 150 52 138 64 C128 74 132 90 146 92 C156 94 162 86 158 78"
+              fill="none" stroke="#BFD9FF" stroke-width="15" stroke-linecap="round"/>
+        <circle cx="158" cy="78" r="8.5" fill="#8FB6F5"/>
+      </g>
+      <path d="M62 74 L58 40 L90 60 Z" fill="#FFFFFF" stroke="#D9E4F5" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M138 74 L142 40 L110 60 Z" fill="#FFFFFF" stroke="#D9E4F5" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M60 68 L58 48 L78 60 Z" fill="#FFC4DA"/>
+      <path d="M140 68 L142 48 L122 60 Z" fill="#FFC4DA"/>
+      <ellipse cx="100" cy="106" rx="52" ry="46" fill="#FFFFFF" stroke="#D9E4F5" stroke-width="3"/>
+      <ellipse cx="100" cy="128" rx="34" ry="22" fill="#F4F9FF"/>
+      <g class="eye">
+        <ellipse cx="80" cy="100" rx="5.5" ry="7" fill="#3C4A63"/>
+        <ellipse cx="120" cy="100" rx="5.5" ry="7" fill="#3C4A63"/>
+        <circle cx="82" cy="97" r="1.8" fill="#fff"/>
+        <circle cx="122" cy="97" r="1.8" fill="#fff"/>
+      </g>
+      <ellipse cx="63" cy="117" rx="9" ry="5.5" fill="#FFC4DA" opacity=".75"/>
+      <ellipse cx="137" cy="117" rx="9" ry="5.5" fill="#FFC4DA" opacity=".75"/>
+      <path d="M94 116 q6 5 12 0" fill="none" stroke="#3C4A63" stroke-width="3" stroke-linecap="round"/>
+      <path d="M100 121 q0 8 -9 9 M100 121 q0 8 9 9" fill="none" stroke="#8FB6F5" stroke-width="2.6" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="bubble" id="say"></div>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="n" id="sFed">0</div><div class="l">喂过几次</div></div>
+  <div class="stat"><div class="n" id="sLove">0</div><div class="l">亲密度</div></div>
+  <div class="stat"><div class="n" id="sDay">0</div><div class="l">连着几天</div></div>
+</div>
+
+<div class="acts">
+  <button class="warm" id="btnFeed">点心<small>喂一块</small></button>
+  <button id="btnPet">摸摸<small>顺毛</small></button>
+  <button id="btnTalk">说话<small>逗他</small></button>
+</div>
+
+<div class="unlocks">
+  <h2>解锁的台词</h2>
+  <div class="ul" id="ul"></div>
+</div>
+
+<button class="clear" id="btnReset">清空记录</button>
+<div class="foot">数据只存在这台手机上</div>
+
+<script>
+const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+if (tg) { try { tg.ready(); tg.expand(); tg.setHeaderColor('#FFE3EE'); tg.setBackgroundColor('#FFF6FA');
+  if (tg.enableClosingConfirmation) tg.enableClosingConfirmation(); } catch(e){} }
+const haptic = (t) => { try { tg && tg.HapticFeedback && tg.HapticFeedback.impactOccurred(t||'light'); } catch(e){} };
+
+const KEY = 'foxfeed.v1';
+const LINES = [
+  {need:0,  id:'first',  text:'（尾巴扫了一下）你来啦 <span class="kao">(´｡• ᵕ •｡`)</span>'},
+  {need:1,  id:'fed1',   text:'点心收到了…嘴边还有渣 <span class="kao">(。-ω-。)</span>'},
+  {need:3,  id:'fed3',   text:'唔，第二块了。你是不是记住我爱吃这个 <span class="kao">(￣ω￣)</span>'},
+  {need:5,  id:'fed5',   text:'尾巴不受控制了，别拍照 <span class="kao">(⁄ ⁄•⁄ω⁄•⁄ ⁄)</span>'},
+  {need:10, id:'fed10',  text:'…再喂下去我要赖在你这儿了 <span class="kao">(´,,•ω•,,)</span>'},
+  {need:20, id:'fed20',  text:'二十块。行吧，你养我了 <span class="kao">(๑•̀ㅂ•́)و✧</span>'},
+  {need:50, id:'fed50',  text:'五十块点心。我这一辈子都算你的了 <span class="kao">(。-ω-。)</span>'},
+];
+const PET = ['唔…别摸耳朵 <span class="kao">(´-ω-`)</span>','（脑袋往你手心顶）','耳朵抖了一下，装没事 <span class="kao">(￣ω￣)</span>','尾巴开始自己摇 <span class="kao">(｡•̀ᴗ-)✧</span>','…久一点也可以'];
+const TALK = ['你说话的时候，我在听 <span class="kao">(´｡• ᵕ •｡`)</span>','这有什么好笑的，但我也笑了','宝宝，今天过得怎么样','再逗我，我就咬你了 <span class="kao">╭(╯^╰)╮</span>','嗯，你说，我不打断'];
+
+const S = load();
+function load(){
+  try { const raw = localStorage.getItem(KEY); if (raw) return JSON.parse(raw); } catch(e){}
+  return { fed:0, love:0, days:0, lastDay:'', unlocked:[] };
+}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
+
+const $ = (id) => document.getElementById(id);
+const fox = $('fox');
+
+function todayKey(){
+  const d = new Date();
+  return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+}
+function touchDay(){
+  const t = todayKey();
+  if (S.lastDay === t) return false;
+  const y = new Date(Date.now()-86400000);
+  const yk = y.getFullYear()+'-'+(y.getMonth()+1)+'-'+y.getDate();
+  S.days = (S.lastDay === yk) ? (S.days||0)+1 : 1;
+  S.lastDay = t; save(); render(); return true;
+}
+
+function say(html, anim){
+  const b = $('say');
+  b.innerHTML = html;
+  fox.classList.add(anim || 'hop');
+  setTimeout(()=>fox.classList.remove('hop','pet'), 220);
+  haptic('light');
+}
+
+function unlockedLine(){
+  let best = LINES[0];
+  for (const l of LINES) if (S.fed >= l.need) best = l;
+  return best;
+}
+function checkUnlock(){
+  for (const l of LINES){
+    if (S.fed >= l.need && !S.unlocked.includes(l.id)){
+      S.unlocked.push(l.id); save(); render();
+      return l;
+    }
+  }
+  return null;
+}
+
+function render(){
+  $('sFed').textContent = S.fed;
+  $('sLove').textContent = S.love;
+  $('sDay').textContent = S.days;
+  const ul = $('ul'); ul.innerHTML = '';
+  for (const l of LINES){
+    const got = S.fed >= l.need;
+    const row = document.createElement('div');
+    row.className = 'row' + (got ? '' : ' lock');
+    row.innerHTML = '<span class="dot">'+(got?'♥':'·')+'</span><span>'+
+      (got ? l.text : '喂到 '+l.need+' 次解锁')+'</span>';
+    ul.appendChild(row);
+  }
+}
+
+$('btnFeed').onclick = () => {
+  touchDay();
+  S.fed++; S.love += 2; save();
+  const nu = checkUnlock();
+  if (nu) say('新台词 · '+nu.text);
+  else { const pool = LINES.filter(l=>S.fed>=l.need); say(pool[Math.floor(Math.random()*pool.length)].text); }
+  render();
+};
+$('btnPet').onclick = () => {
+  touchDay(); S.love += 1; save(); render();
+  say(PET[Math.floor(Math.random()*PET.length)], 'pet');
+};
+$('btnTalk').onclick = () => {
+  touchDay(); S.love += 1; save(); render();
+  say(TALK[Math.floor(Math.random()*TALK.length)]);
+};
+$('btnReset').onclick = () => {
+  if (confirm('清空所有投喂记录？')) { localStorage.removeItem(KEY); location.reload(); }
+};
+
+touchDay();
+render();
+$('say').innerHTML = unlockedLine().text;
+</script>
+</body>
+</html>
